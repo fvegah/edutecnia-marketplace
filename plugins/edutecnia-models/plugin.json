@@ -1,0 +1,5 @@
+{
+  "name": "edutecnia-models",
+  "description": "Estructura de modelos y relaciones del backend Edutecnia. Rails 7 con PostgreSQL, patrones de dominio educativo.",
+  "version": "1.0.0"
+}

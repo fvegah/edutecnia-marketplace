@@ -1,0 +1,5 @@
+{
+  "name": "edutecnia-frontend",
+  "description": "Sistema de diseño y patrones UI para aplicaciones frontend de Edutecnia. Vue 2 + Bootstrap-Vue con SCSS personalizado.",
+  "version": "1.0.0"
+}
