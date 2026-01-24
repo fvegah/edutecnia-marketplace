@@ -1,0 +1,27 @@
+{
+  "name": "edutecnia-skills",
+  "owner": {
+    "name": "Edutecnia Team",
+    "email": "dev@edutecnia.cl"
+  },
+  "metadata": {
+    "description": "Skills para desarrollo del ecosistema Edutecnia",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "edutecnia-frontend",
+      "source": "./plugins/edutecnia-frontend",
+      "description": "Sistema de diseño UI para aplicaciones Vue 2 + Bootstrap-Vue",
+      "version": "1.0.0",
+      "category": "design-system"
+    },
+    {
+      "name": "edutecnia-models",
+      "source": "./plugins/edutecnia-models",
+      "description": "Estructura de modelos Rails para el dominio educativo",
+      "version": "1.0.0",
+      "category": "documentation"
+    }
+  ]
+}
