@@ -13,7 +13,67 @@ This skill provides the design system, component patterns, and styling guideline
 - **UI Library**: Bootstrap-Vue
 - **State Management**: Vuex (86 modules)
 - **Styling**: SCSS with BEM methodology
-- **Icons**: Font Awesome 4.x
+- **Icons**: Bootstrap Vue Icons (primary) + Font Awesome 4.x (legacy)
+
+## Icons
+
+The project uses **Bootstrap Vue Icons** as the primary icon system. Font Awesome 4.x icons (`fa fa-*`) are legacy and may not render properly in all components.
+
+### Preferred: Bootstrap Vue Icons
+
+```vue
+<!-- Navigation icons -->
+<b-icon-chevron-left></b-icon-chevron-left>
+<b-icon-chevron-right></b-icon-chevron-right>
+<b-icon-skip-backward-fill></b-icon-skip-backward-fill>
+<b-icon-skip-forward-fill></b-icon-skip-forward-fill>
+
+<!-- Action icons -->
+<b-icon-arrow-clockwise></b-icon-arrow-clockwise>  <!-- Refresh/Sync -->
+<b-icon-plus></b-icon-plus>
+<b-icon-pencil></b-icon-pencil>
+<b-icon-trash></b-icon-trash>
+<b-icon-check></b-icon-check>
+<b-icon-x></b-icon-x>
+
+<!-- Status icons -->
+<b-icon-check-circle></b-icon-check-circle>
+<b-icon-exclamation-circle></b-icon-exclamation-circle>
+<b-icon-info-circle></b-icon-info-circle>
+
+<!-- File/Document icons -->
+<b-icon-file-earmark></b-icon-file-earmark>
+<b-icon-download></b-icon-download>
+<b-icon-upload></b-icon-upload>
+```
+
+### Legacy: Font Awesome 4.x (use sparingly)
+
+```vue
+<!-- Only use when Bootstrap Vue Icons don't have equivalent -->
+<i class="fa fa-users"></i>
+<i class="fa fa-book"></i>
+<i class="fa fa-calendar"></i>
+<i class="fa fa-clock-o"></i>
+<i class="fa fa-graduation-cap"></i>
+```
+
+### Icon in Buttons Pattern
+
+```vue
+<!-- With Bootstrap Vue Icons (preferred) -->
+<b-button variant="outline-secondary" size="sm" @click="refresh" :disabled="loading">
+  <b-spinner v-if="loading" small></b-spinner>
+  <b-icon-arrow-clockwise v-else></b-icon-arrow-clockwise>
+</b-button>
+
+<!-- With text -->
+<b-button variant="primary" @click="save" :disabled="saving">
+  <b-spinner v-if="saving" small class="mr-1"></b-spinner>
+  <b-icon-check v-else class="mr-1"></b-icon-check>
+  Guardar
+</b-button>
+```
 
 ## Brand Colors
 
@@ -771,6 +831,408 @@ export default {
 </script>
 ```
 
+## Modal with Custom Header
+
+Professional modal design with gradient header and status indicators:
+
+```vue
+<template lang="pug">
+  b-modal(
+    ref="modal"
+    centered
+    hide-footer
+    size="xl"
+    modal-class="custom-modal"
+    header-class="custom-modal__header-wrapper"
+    body-class="custom-modal__body"
+    hide-header
+  )
+    //- Custom Header
+    .modal__header
+      .modal-header__main
+        .modal-header__icon
+          i.fa.fa-users
+        .modal-header__info
+          h3.modal-header__title {{ title }}
+          .modal-header__meta
+            span.meta-item
+              i.fa.fa-calendar
+              | {{ date }}
+            span.meta-item
+              i.fa.fa-clock-o
+              | {{ time }}
+
+      //- Status Indicators
+      .modal-header__status
+        .status-pill(:class="{ active: isComplete }")
+          i.fa.fa-check-circle
+          span {{ isComplete ? 'Completado' : 'Pendiente' }}
+        .status-pill(:class="{ active: isConfirmed }")
+          i.fa.fa-lock
+          span {{ isConfirmed ? 'Confirmado' : 'Sin confirmar' }}
+
+      button.modal-header__close(type="button" @click="hide" aria-label="Cerrar")
+        span(aria-hidden="true") &times;
+</template>
+```
+
+```scss
+.modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border-radius: 8px 8px 0 0;
+}
+
+.modal-header__main {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex: 1;
+}
+
+.modal-header__icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.modal-header__title {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.modal-header__meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  opacity: 0.9;
+
+  i { font-size: 12px; }
+}
+
+.modal-header__status {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+
+  &.active {
+    background: rgba(16, 185, 129, 0.9);
+  }
+
+  i { font-size: 12px; }
+}
+
+.modal-header__close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-left: 16px;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+```
+
+## Calendar Component Pattern
+
+Monthly calendar grid with status indicators:
+
+```scss
+.calendar-container {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+
+  &.complete { background: #10b981; }
+  &.partial { background: #f59e0b; }
+  &.pending { background: #ef4444; }
+  &.future { background: #93c5fd; }
+  &.weekend { background: #d1d5db; }
+}
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.day-cell {
+  min-height: 60px;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  background: #fff;
+  border: 1px solid #e9ecef;
+  transition: all 0.15s;
+
+  &:hover:not(.empty) {
+    border-color: #3b82f6;
+  }
+
+  &.today { border: 2px solid #f97316; background: #fff7ed; }
+  &.selected { border: 2px solid #3b82f6; background: #eff6ff; }
+  &.complete { background: #ecfdf5; border-color: #6ee7b7; }
+  &.partial { background: #fffbeb; border-color: #fcd34d; }
+  &.pending { background: #fef2f2; border-color: #fca5a5; }
+}
+
+.day-number {
+  font-weight: 600;
+  font-size: 13px;
+  color: #374151;
+}
+
+.day-courses-count {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+```
+
+## Pending Items Panel
+
+Sidebar panel showing pending items as clickable chips:
+
+```scss
+.pending-panel {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border-left: 4px solid #ef4444;
+}
+
+.pending-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.pending-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #991b1b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pending-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pending-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+  }
+}
+
+.pending-date {
+  font-weight: 600;
+  font-size: 12px;
+  color: #991b1b;
+}
+
+.pending-count {
+  font-size: 10px;
+  color: #dc2626;
+}
+```
+
+## Refresh/Sync Pattern
+
+Components that load data should expose a public `refresh()` method for parent components to call:
+
+```javascript
+export default {
+  methods: {
+    // Public method - can be called via $refs from parent
+    async refresh() {
+      await Promise.all([
+        this.loadData(),
+        this.loadRelatedData()
+      ]);
+    },
+
+    async loadData() {
+      this.loading = true;
+      try {
+        // Load data...
+      } finally {
+        this.loading = false;
+      }
+    }
+  }
+}
+
+// Parent component usage:
+// this.$refs.childComponent.refresh();
+```
+
+## Course/Item Card Grid
+
+Grid layout for displaying items with status indicators:
+
+```scss
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+
+  @media (max-width: 1400px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.item-card {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  border-left: 4px solid #e5e7eb;
+  background: #fff;
+  transition: all 0.2s;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  &.confirmed {
+    border-left-color: #10b981;
+    background: #ecfdf5;
+  }
+
+  &.passed {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+  }
+
+  &.pending {
+    border-left-color: #ef4444;
+    background: #fef2f2;
+  }
+
+  &.selected {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+}
+
+.item-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.item-name {
+  flex: 1;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.item-card-actions {
+  display: flex;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+```
+
 ## Best Practices
 
 1. **Always use BEM naming** for SCSS classes
@@ -782,7 +1244,9 @@ export default {
 7. **Prefer gradients** over flat colors for primary buttons and headers
 8. **Use box-shadow** for elevation and depth
 9. **Include loading states** for async operations
-10. **Use Font Awesome 4.x** icons with `fa` prefix
+10. **Use Bootstrap Vue Icons** (`b-icon-*`) for new components, Font Awesome only for legacy
+11. **Expose `refresh()` methods** on data-loading components for parent sync
+12. **Use `ref` attribute** on child components to enable calling their methods
 
 ## File Organization
 
