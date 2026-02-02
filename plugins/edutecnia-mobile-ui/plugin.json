@@ -1,0 +1,8 @@
+{
+  "name": "edutecnia-mobile-ui",
+  "description": "Componentes compartidos para las apps moviles de Edutecnia (students, parents, teachers)",
+  "version": "1.0.0",
+  "skills": [
+    "skills/shared-components.md"
+  ]
+}
