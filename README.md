@@ -7,18 +7,26 @@ Marketplace de plugins Claude Code para el ecosistema Edutecnia. Contiene skills
 ```
 edutecnia-marketplace/
 ├── .claude-plugin/
-│   └── plugin.json          # Configuración del marketplace
+│   └── marketplace.json     # Configuración del marketplace
 ├── plugins/
 │   ├── edutecnia-frontend/  # Sistema de diseño UI
 │   │   ├── plugin.json
 │   │   └── skills/
-│   │       └── edutecnia-ui/
+│   │       ├── edutecnia-ui/
+│   │       │   └── index.md
+│   │       ├── nuxt4-admin/
+│   │       │   └── index.md
+│   │       └── establishment-picker/
 │   │           └── index.md
-│   └── edutecnia-models/    # Estructura de modelos
+│   ├── edutecnia-models/    # Estructura de modelos
+│   │   ├── plugin.json
+│   │   └── skills/
+│   │       └── models-structure/
+│   │           └── index.md
+│   └── edutecnia-mobile-ui/ # Componentes móviles compartidos
 │       ├── plugin.json
 │       └── skills/
-│           └── models-structure/
-│               └── index.md
+│           └── shared-components.md
 └── README.md
 ```
 
@@ -29,9 +37,11 @@ edutecnia-marketplace/
 Sistema de diseño y patrones UI para aplicaciones frontend de Edutecnia.
 
 **Skills:**
-- `edutecnia-ui` - Guía completa del sistema de diseño
+- `edutecnia-ui` - Guía completa del sistema de diseño (Vue 2 + Bootstrap-Vue)
+- `nuxt4-admin` - Standard para apps Nuxt 4 admin (SSO, Nuxt UI v4, Tailwind v4, composables)
+- `establishment-picker` - Flujo de selección de establecimiento post-login (Nuxt 4)
 
-**Contenido:**
+**Contenido edutecnia-ui:**
 - Paleta de colores (naranja #ee7525 como color principal)
 - Tipografía y estilos base
 - Componentes Bootstrap-Vue personalizados
@@ -42,11 +52,24 @@ Sistema de diseño y patrones UI para aplicaciones frontend de Edutecnia.
 - Estructura SCSS con BEM
 - Breakpoints responsive
 
+**Contenido nuxt4-admin:**
+- Auth SSO cookie + Google OAuth (Firebase)
+- Nuxt UI v4 components y layout patterns (Dashboard, Sidebar, Navbar)
+- Tailwind CSS v4 custom colors (`:root` pattern)
+- CRUD patterns (lista, formulario, detalle, modal)
+- Composables base (useApi, useNotification, useConfirmDialog)
+- Gotchas conocidos (tree-shaking, UAuthForm, USelect, auth SSR)
+
+**Contenido establishment-picker:**
+- Full-screen picker para usuarios multi-establecimiento
+- Lógica `navigateAfterLogin()` (1 vs múltiples establecimientos)
+- Integración con `useEstablishment()` composable
+- Indicador en AppBar con link al picker
+- Edge cases y anti-patterns documentados
+
 **Stack:**
-- Vue 2.6 + TypeScript
-- Bootstrap-Vue
-- SCSS con metodología BEM
-- Font Awesome 4.x
+- Vue 2.6 + TypeScript + Bootstrap-Vue (edutecnia-ui)
+- Nuxt 4 + Nuxt UI v4 + Tailwind CSS v4 (nuxt4-admin, establishment-picker)
 
 ### edutecnia-models
 
@@ -109,6 +132,29 @@ Activa el skill cuando necesites:
 
 ```
 /edutecnia-frontend:edutecnia-ui
+```
+
+### Skill Nuxt 4 Admin (nuxt4-admin)
+
+Activa el skill cuando necesites:
+- Crear un nuevo proyecto Nuxt 4 para el ecosistema Edutecnia
+- Implementar auth SSO cookie + Google OAuth
+- Usar patrones CRUD (lista, formulario, detalle, modal)
+- Aplicar Nuxt UI v4 + Tailwind CSS v4 correctamente
+
+```
+/edutecnia-frontend:nuxt4-admin
+```
+
+### Skill Establishment Picker (establishment-picker)
+
+Activa el skill cuando necesites:
+- Implementar selección de establecimiento post-login
+- Flujo multi-establecimiento en apps Nuxt 4
+- Entender la lógica `navigateAfterLogin()` y el composable `useEstablishment()`
+
+```
+/edutecnia-frontend:establishment-picker
 ```
 
 ### Skill de Modelos (models-structure)
