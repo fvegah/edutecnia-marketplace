@@ -16,7 +16,9 @@ edutecnia-marketplace/
 │   │       │   └── index.md
 │   │       ├── nuxt4-admin/
 │   │       │   └── index.md
-│   │       └── establishment-picker/
+│   │       ├── establishment-picker/
+│   │       │   └── index.md
+│   │       └── switcher-sso/
 │   │           └── index.md
 │   ├── edutecnia-models/    # Estructura de modelos
 │   │   ├── plugin.json
@@ -40,6 +42,7 @@ Sistema de diseño y patrones UI para aplicaciones frontend de Edutecnia.
 - `edutecnia-ui` - Guía completa del sistema de diseño (Vue 2 + Bootstrap-Vue)
 - `nuxt4-admin` - Standard para apps Nuxt 4 admin (SSO, Nuxt UI v4, Tailwind v4, composables)
 - `establishment-picker` - Flujo de selección de establecimiento post-login (Nuxt 4)
+- `switcher-sso` - Switcher cross-app + SSO cookie auth + widget embebible
 
 **Contenido edutecnia-ui:**
 - Paleta de colores (naranja #ee7525 como color principal)
@@ -67,9 +70,40 @@ Sistema de diseño y patrones UI para aplicaciones frontend de Edutecnia.
 - Indicador en AppBar con link al picker
 - Edge cases y anti-patterns documentados
 
+**Contenido switcher-sso:**
+- Arquitectura SSO cookie (JWT, dual auth header/cookie)
+- Widget vanilla JS embebible (inline + floating modes)
+- Filtrado de apps por permisos/categorías
+- Detección de logout global (visibilitychange)
+- Variables de entorno (dev vs prod)
+- Integración en apps Nuxt 4 (plugin, AppBar container)
+
 **Stack:**
 - Vue 2.6 + TypeScript + Bootstrap-Vue (edutecnia-ui)
-- Nuxt 4 + Nuxt UI v4 + Tailwind CSS v4 (nuxt4-admin, establishment-picker)
+- Nuxt 4 + Nuxt UI v4 + Tailwind CSS v4 (nuxt4-admin, establishment-picker, switcher-sso)
+
+### edutecnia-mobile-ui
+
+Standard UI para apps móviles de Edutecnia (parents, teachers, students).
+
+**Skills:**
+- `mobile-ui-standard` - Patrones completos Ionic Vue + Capacitor
+
+**Contenido:**
+- Ionic Vue 8 + Capacitor 7 patterns
+- Dark mode (iOS + MD, light/dark/system)
+- Page structure, pull-to-refresh, loading skeletons
+- Componentes: EduLogo, SelectStudent, LoadingSkeleton
+- AppLayout (split pane), AppMenu, AppTopBar
+- Modales (modalController + inline)
+- Formularios (ion-input stacked, toasts)
+- Login card con sombra
+- Iconos ionicons (dual ios/md)
+- Responsive (576px breakpoint)
+
+**Stack:**
+- Vue 3.5 + Ionic Vue 8.4 + Capacitor 7
+- Vite 6 + Axios + ionicons
 
 ### edutecnia-models
 
@@ -155,6 +189,30 @@ Activa el skill cuando necesites:
 
 ```
 /edutecnia-frontend:establishment-picker
+```
+
+### Skill Switcher SSO (switcher-sso)
+
+Activa el skill cuando necesites:
+- Entender el flujo SSO cookie entre apps
+- Integrar el widget switcher en una nueva app
+- Implementar detección de logout global
+- Configurar variables de entorno para SSO
+
+```
+/edutecnia-frontend:switcher-sso
+```
+
+### Skill Mobile UI (mobile-ui-standard)
+
+Activa el skill cuando necesites:
+- Crear vistas para apps Ionic Vue (parents, teachers, students)
+- Implementar dark mode en apps móviles
+- Usar patrones de modales, formularios, listas Ionic
+- Aplicar estilos y componentes compartidos
+
+```
+/edutecnia-mobile-ui:mobile-ui-standard
 ```
 
 ### Skill de Modelos (models-structure)

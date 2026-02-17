@@ -1,7 +1,7 @@
 {
   "name": "edutecnia-mobile-ui",
-  "description": "Componentes compartidos para las apps moviles de Edutecnia (students, parents, teachers)",
-  "version": "1.0.0",
+  "description": "Standard UI patterns para apps moviles de Edutecnia (Ionic Vue + Capacitor). Cubre dark mode, page structure, modales, formularios, componentes y estilos.",
+  "version": "2.0.0",
   "skills": [
     "skills/shared-components.md"
   ]

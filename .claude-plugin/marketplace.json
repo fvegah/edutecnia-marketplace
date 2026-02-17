@@ -12,8 +12,8 @@
     {
       "name": "edutecnia-frontend",
       "source": "./plugins/edutecnia-frontend",
-      "description": "Sistema de diseño UI para aplicaciones Vue 2 + Bootstrap-Vue",
-      "version": "1.0.0",
+      "description": "Sistema de diseño UI + patrones Nuxt 4 + SSO + Switcher para apps web Edutecnia",
+      "version": "1.3.0",
       "category": "design-system"
     },
     {
@@ -22,6 +22,13 @@
       "description": "Estructura de modelos Rails para el dominio educativo",
       "version": "1.0.0",
       "category": "documentation"
+    },
+    {
+      "name": "edutecnia-mobile-ui",
+      "source": "./plugins/edutecnia-mobile-ui",
+      "description": "Standard UI para apps moviles Ionic Vue + Capacitor",
+      "version": "2.0.0",
+      "category": "design-system"
     }
   ]
 }
