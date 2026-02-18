@@ -1,0 +1,5 @@
+{
+  "name": "edutecnia-infra",
+  "description": "Infraestructura y servidores del ecosistema Edutecnia. Staging, produccion, servicios systemd, optimizaciones.",
+  "version": "1.0.0"
+}

@@ -1,5 +1,5 @@
 {
   "name": "edutecnia-frontend",
   "description": "Sistema de diseño y patrones UI para aplicaciones frontend de Edutecnia. Vue 2 (edutecnia-ui) + Nuxt 4 admin (nuxt4-admin) + Establishment picker + Switcher SSO.",
-  "version": "1.3.0"
+  "version": "1.4.0"
 }

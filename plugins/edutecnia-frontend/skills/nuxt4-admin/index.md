@@ -448,12 +448,87 @@ icon: 'lucide:check-circle'
 `authStore.isAuthenticated` solo funciona client-side (requiere `initAuth()`). Para checks en SSR usar `authStore.hasToken` que lee `useCookie()` desde los request headers.
 
 ```ts
-// En middleware/auth.global.ts — redirect /login si ya autenticado
-if (to.path === '/login') {
-  // hasToken funciona en SSR (useCookie lee headers) — previene hydration mismatch
-  if (authStore.isAuthenticated || authStore.hasToken) return navigateTo('/')
-}
+// middleware/auth.global.ts — patron completo
+export default defineNuxtRouteMiddleware(async (to) => {
+  const authStore = useAuthStore()
+
+  if (to.path === '/logout') return
+
+  // /login: si ya autenticado, redirigir a home
+  if (to.path === '/login') {
+    // hasToken funciona en SSR (useCookie lee headers) — previene hydration mismatch
+    if (authStore.isAuthenticated || authStore.hasToken) return navigateTo('/')
+    if (import.meta.client) {
+      await authStore.initAuth()
+      if (authStore.isAuthenticated) return navigateTo('/')
+    }
+    return
+  }
+
+  // Ya autenticado
+  if (authStore.isAuthenticated) return
+
+  // SSR: si no hay cookie, redirect inmediato a /login (previene layout mismatch)
+  if (import.meta.server && !authStore.hasToken) {
+    return navigateTo('/login')
+  }
+
+  // Client: intentar autenticar via SSO cookie
+  if (import.meta.client) {
+    await authStore.initAuth()
+    if (authStore.user) return
+    return navigateTo('/login')
+  }
+})
 ```
+
+**CRITICO — SSR redirect sin cookie**: Sin la linea `if (import.meta.server && !authStore.hasToken) return navigateTo('/login')`, la primera visita renderiza el default layout (sidebar) en SSR, luego el client redirige a /login con auth layout, causando un hydration mismatch visible (card desplazada).
 
 ### 7. app.vue: NO duplicar initAuth
 `initAuth()` debe llamarse UNA sola vez en `app.vue` `onMounted`. El middleware NO debe llamar `initAuth` por separado, ya que causa race conditions.
+
+### 8. Switcher widget: usar runtimeConfig, NO hardcodear URL
+```ts
+// MAL — falla en dominios staging tipo ayuda-staging.edutecnia.cl
+const src = h.includes('staging')
+  ? 'https://switcher.staging.edutecnia.cl/widget.js'
+  : 'https://switcher.edutecnia.cl/widget.js'
+
+// BIEN — usa NUXT_PUBLIC_SWITCHER_URL configurado por ambiente
+const baseUrl = config.public.switcherUrl as string
+const src = `${baseUrl}/widget.js`
+```
+
+## Deploy en Cloudflare Pages
+
+### Variables de Entorno por Ambiente
+
+| Variable | Production | Preview (staging) |
+|----------|------------|-------------------|
+| `NUXT_PUBLIC_API_BASE` | `https://back.edutecnia.cl` | `https://back.staging.edutecnia.cl` |
+| `NUXT_PUBLIC_PORTAL_URL` | `https://portal.edutecnia.cl` | `https://portal.staging.edutecnia.cl` |
+| `NUXT_PUBLIC_SWITCHER_URL` | `https://switcher.edutecnia.cl` | `https://switcher.edutecnia.cl` |
+| `NUXT_PUBLIC_FIREBASE_API_KEY` | `AIza...` | `AIza...` (mismo) |
+| `NITRO_PRESET` | `cloudflare-pages` | `cloudflare-pages` |
+| `NODE_VERSION` | `22` | `22` |
+
+### Dominios Custom en Cloudflare Pages
+
+- **Produccion** (`main` branch): Custom domain directo desde Pages settings (ej: `ayuda.edutecnia.cl`)
+- **Staging** (`staging` branch): Cloudflare Pages **no permite asignar custom domains a preview branches** desde el panel. Solucion: crear CNAME manual en DNS
+
+```
+ayuda-staging.edutecnia.cl  CNAME  staging.{project-name}.pages.dev  (Proxied)
+```
+
+**IMPORTANTE**: No usar subdominios dobles como `ayuda.staging.edutecnia.cl` — Cloudflare Universal SSL solo cubre un nivel de subdomain (`*.edutecnia.cl`), no dobles (`*.staging.edutecnia.cl`).
+
+### Backend CORS
+
+Al crear un nuevo frontend, agregar su dominio a `ALLOWED_ORIGINS_CORS` en el backend:
+
+```bash
+# En /var/www/edutecnia/shared/.env (staging y produccion)
+ALLOWED_ORIGINS_CORS='...,nuevo-dominio.edutecnia.cl'
+# Reiniciar: sudo systemctl restart puma_edutecnia.service
+```

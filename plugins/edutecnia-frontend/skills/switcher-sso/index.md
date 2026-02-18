@@ -84,18 +84,45 @@ def set_sso_cookie(jwt)
   cookie_options = {
     value: jwt,
     httponly: false,       # Accesible via JS (useCookie)
-    secure: Rails.env.production?,
+    secure: !Rails.env.development?,
     same_site: :lax,
-    expires: 300.days.from_now,
     path: '/'
   }
-  # En produccion: domain .edutecnia.cl (compartido entre subdominios)
-  if ENV['SSO_COOKIE_DOMAIN'].present?
+  if Rails.env.production?
+    cookie_options[:domain] = '.edutecnia.cl'
+  elsif ENV['SSO_COOKIE_DOMAIN'].present?
     cookie_options[:domain] = ENV['SSO_COOKIE_DOMAIN']
   end
   response.set_cookie('edutecnia_token', cookie_options)
 end
 ```
+
+### Cookie Domain por Entorno
+
+| Entorno | RAILS_ENV | Cookie Domain | Notas |
+|---------|-----------|---------------|-------|
+| Produccion | `production` | `.edutecnia.cl` (hardcoded) | Cubre todos los `*.edutecnia.cl` |
+| Staging | `staging` | `.edutecnia.cl` (via `SSO_COOKIE_DOMAIN`) | **Debe ser `.edutecnia.cl`**, NO `.staging.edutecnia.cl` |
+| Desarrollo | `development` | (host-only, sin domain) | Cookie solo en localhost |
+
+**CRITICO — Staging Cookie Domain:**
+
+Los frontends staging usan dominios como `ayuda-staging.edutecnia.cl` (NO `ayuda.staging.edutecnia.cl`).
+Estos NO son subdominios de `staging.edutecnia.cl`, son subdominios de `edutecnia.cl`.
+
+Si `SSO_COOKIE_DOMAIN=.staging.edutecnia.cl`, la cookie NO sera visible en `ayuda-staging.edutecnia.cl`.
+Siempre usar `SSO_COOKIE_DOMAIN=.edutecnia.cl` en staging.
+
+### CORS para Nuevos Frontends
+
+El backend requiere que cada frontend este en `ALLOWED_ORIGINS_CORS` en el `.env`:
+
+```bash
+# /var/www/edutecnia/shared/.env (staging)
+ALLOWED_ORIGINS_CORS='portal.staging.edutecnia.cl,...,ayuda-staging.edutecnia.cl,ayuda.edutecnia.cl'
+```
+
+Al agregar un nuevo frontend al ecosistema, agregar su dominio aqui y reiniciar Puma.
 
 ### Dual Auth (authenticate.rb)
 ```ruby
@@ -110,12 +137,14 @@ end
 ```
 
 ### Variables de Entorno
-| Variable | Donde | Valor Dev | Valor Prod |
-|----------|-------|-----------|------------|
-| `SSO_COOKIE_DOMAIN` | Backend Rails | (no se setea, host-only) | `.edutecnia.cl` |
-| `VUE_APP_SWITCHER_URL` | Portal .env | `http://localhost:8047/widget.js` | `https://switcher.edutecnia.cl/widget.js` |
-| `NUXT_PUBLIC_API_BASE` | Switcher | `http://localhost:3040` | `https://back.edutecnia.cl` |
-| `NUXT_PUBLIC_PORTAL_URL` | Switcher | `http://localhost:8040` | `https://portal.edutecnia.cl` |
+| Variable | Donde | Valor Dev | Valor Staging | Valor Prod |
+|----------|-------|-----------|---------------|------------|
+| `SSO_COOKIE_DOMAIN` | Backend Rails `.env` | (no se setea, host-only) | `.edutecnia.cl` | `.edutecnia.cl` (hardcoded) |
+| `ALLOWED_ORIGINS_CORS` | Backend Rails `.env` | (no se setea) | `portal.staging...,ayuda-staging.edutecnia.cl` | `portal.edutecnia.cl,...,ayuda.edutecnia.cl` |
+| `VUE_APP_SWITCHER_URL` | Portal .env | `http://localhost:8047/widget.js` | `https://switcher.staging.edutecnia.cl/widget.js` | `https://switcher.edutecnia.cl/widget.js` |
+| `NUXT_PUBLIC_API_BASE` | Apps Nuxt | `http://localhost:3040` | `https://back.staging.edutecnia.cl` | `https://back.edutecnia.cl` |
+| `NUXT_PUBLIC_PORTAL_URL` | Apps Nuxt | `http://localhost:8040` | `https://portal.staging.edutecnia.cl` | `https://portal.edutecnia.cl` |
+| `NUXT_PUBLIC_SWITCHER_URL` | Apps Nuxt | `http://localhost:8047` | `https://switcher.edutecnia.cl` | `https://switcher.edutecnia.cl` |
 
 ## Filtrado de Apps por Permisos
 
@@ -211,20 +240,36 @@ document.addEventListener('visibilitychange', async () => {
 ## Integracion en Apps Nuxt 4
 
 ### Cargar widget (app.vue)
+
+**IMPORTANTE**: Usar `runtimeConfig.public.switcherUrl` en vez de hardcodear la URL. La URL hardcodeada falla en dominios staging tipo `ayuda-staging.edutecnia.cl` porque `hostname.includes('staging')` es true pero `switcher.staging.edutecnia.cl` puede no existir.
+
 ```ts
+// app.vue
+const config = useRuntimeConfig()
+
 function loadSwitcherWidget() {
   if ((window as unknown as Record<string, unknown>).__edutecniaSwitcher) return
-  const h = window.location.hostname
-  const isLocal = h === 'localhost' || h === '127.0.0.1'
-  const src = isLocal
-    ? 'http://localhost:8047/widget.js'
-    : (h.includes('staging') ? 'https://switcher.staging.edutecnia.cl/widget.js' : 'https://switcher.edutecnia.cl/widget.js')
+  const baseUrl = config.public.switcherUrl as string
+  const src = `${baseUrl}/widget.js`
   const script = document.createElement('script')
   script.src = src
   script.async = true
   document.head.appendChild(script)
 }
+
+onMounted(() => {
+  if (authStore.isAuthenticated) loadSwitcherWidget()
+})
+
+watch(() => authStore.isAuthenticated, (authenticated) => {
+  if (import.meta.client && authenticated) loadSwitcherWidget()
+})
 ```
+
+La variable `NUXT_PUBLIC_SWITCHER_URL` se configura por ambiente:
+- Dev: `http://localhost:8047` (default en nuxt.config.ts)
+- Staging: `https://switcher.edutecnia.cl` (o staging si existe)
+- Produccion: `https://switcher.edutecnia.cl`
 
 ### Container en AppBar
 ```vue
