@@ -338,12 +338,15 @@ export function useFeature() {
 
 ## Modal Form Pattern (useOverlay)
 
+**CRITICAL**: In Nuxt UI v4 with `useOverlay`, the default slot is the **trigger** (button to open), NOT the body. Content MUST go in `<template #body>`. Using the default slot renders content BEHIND the modal overlay.
+
 ```vue
 <!-- components/{feature}/ItemFormModal.vue -->
 <template>
+  <!-- For wider modals, use :ui="{ content: 'max-w-2xl' }" — NEVER class="max-w-..." -->
   <UModal :title="isEdit ? 'Editar Item' : 'Crear Item'" :ui="{ footer: 'justify-end' }">
     <template #body>
-      <UForm ref="formRef" :schema="schema" :state="state" @submit="onSubmit">
+      <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
         <UFormField label="Nombre" name="name">
           <UInput v-model="state.name" />
         </UFormField>
@@ -355,6 +358,20 @@ export function useFeature() {
     </template>
   </UModal>
 </template>
+```
+
+For read-only detail modals:
+```vue
+<UModal title="Detalle" :ui="{ footer: 'justify-end', content: 'max-w-2xl' }">
+  <template #body>
+    <div class="space-y-4">
+      <!-- detail content -->
+    </div>
+  </template>
+  <template #footer>
+    <UButton label="Cerrar" color="neutral" variant="outline" @click="emit('close')" />
+  </template>
+</UModal>
 ```
 
 Usage with `useOverlay()`:
@@ -432,7 +449,26 @@ const items = [{ value: '', label: 'Todos' }, ...options]
 <USelect :items="options" placeholder="Todos" class="w-full" />
 ```
 
-### 4. Formato de iconos: lucide:name (NO i-lucide-name)
+### 4. UModal: default slot es trigger, NO body (CRITICO)
+Con `useOverlay`, el default slot de UModal es el trigger (boton que abre). El contenido va en `#body`. Si usas default slot, el contenido se renderiza DETRAS del overlay. Tambien, `class="max-w-..."` en UModal se aplica al root overlay, no al panel — usar `:ui="{ content: 'max-w-2xl' }"`.
+
+```html
+<!-- MAL — contenido se renderiza detras del modal -->
+<UModal title="..." class="max-w-2xl">
+  <div class="p-4">contenido</div>
+  <template #footer>...</template>
+</UModal>
+
+<!-- BIEN — contenido visible dentro del modal -->
+<UModal title="..." :ui="{ content: 'max-w-2xl' }">
+  <template #body>
+    <div>contenido</div>
+  </template>
+  <template #footer>...</template>
+</UModal>
+```
+
+### 5. Formato de iconos: lucide:name (NO i-lucide-name)
 ```ts
 // MAL (formato Nuxt UI v2/UnoCSS)
 icon: 'i-lucide-check-circle'
@@ -441,10 +477,10 @@ icon: 'i-lucide-check-circle'
 icon: 'lucide:check-circle'
 ```
 
-### 5. Inputs no toman ancho completo
+### 6. Inputs no toman ancho completo
 `UInput`, `UTextarea`, `USelect` NO se expanden automaticamente dentro de `UFormField`. Siempre agregar `class="w-full"`.
 
-### 6. Auth middleware: usar hasToken para SSR
+### 7. Auth middleware: usar hasToken para SSR
 `authStore.isAuthenticated` solo funciona client-side (requiere `initAuth()`). Para checks en SSR usar `authStore.hasToken` que lee `useCookie()` desde los request headers.
 
 ```ts
