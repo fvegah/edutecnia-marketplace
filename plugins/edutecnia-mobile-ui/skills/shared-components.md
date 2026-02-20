@@ -1018,3 +1018,54 @@ Auth guard: verifica `getIsAuthenticated()` de Capacitor Preferences. Si autenti
 16. **SIEMPRE** `aria-label` en botones icon-only
 17. **SIEMPRE** `aria-hidden="true"` en iconos decorativos
 18. **Textos en espanol** — Labels, placeholders, mensajes, todo en espanol
+
+## Despliegue Web (Cloudflare Pages)
+
+Las apps moviles de Edutecnia se despliegan como SPA en **Cloudflare Pages**. Ya NO se usa Firebase Hosting.
+
+### Configuracion obligatoria
+
+Cada proyecto debe tener en `public/_redirects`:
+```
+/*    /index.html   200
+```
+
+Este archivo se copia a `dist/` durante el build de Vite y le indica a Cloudflare Pages que sirva `index.html` para cualquier ruta que no coincida con un archivo estatico (SPA fallback).
+
+### Archivos que NO deben existir
+
+Estos archivos son de Firebase Hosting y deben eliminarse si existen:
+- `firebase.json` — Configuracion de Firebase Hosting
+- `.firebaserc` — Alias de proyectos Firebase
+- `.github/workflows/firebase-hosting.yml` — GitHub Action de deploy a Firebase
+
+### Configuracion en Cloudflare Pages Dashboard
+
+| Setting | Valor |
+|---------|-------|
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Root directory | `/` |
+| Node.js version | `22` |
+| Environment variable | `VITE_API_URL` (o `VITE_APP_URL_API` en teachers-app) |
+
+### Ambientes
+
+| Ambiente | Branch | Variable de entorno |
+|----------|--------|---------------------|
+| Production | `main` | `VITE_API_URL=https://back.edutecnia.cl` |
+| Staging | `staging` | `VITE_API_URL=https://back.staging.edutecnia.cl` |
+
+### Dominios custom
+
+| App | Produccion | Staging |
+|-----|-----------|---------|
+| Parents | `padres.edutecnia.cl` | `padres.staging.edutecnia.cl` |
+| Teachers | `docentes.edutecnia.cl` | `docentes.staging.edutecnia.cl` |
+| Students | `estudiantes.edutecnia.cl` | `estudiantes.staging.edutecnia.cl` |
+
+Los dominios custom se configuran en Cloudflare Pages → Custom domains. Cloudflare crea automaticamente los registros DNS necesarios.
+
+### GitHub Actions que SI se mantienen
+
+- `.github/workflows/android-release.yml` — Build de APK/AAB para Google Play (solo en teachers-app y parents-app). Este workflow NO se elimina.

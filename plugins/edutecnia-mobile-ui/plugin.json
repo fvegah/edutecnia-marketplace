@@ -1,7 +1,7 @@
 {
   "name": "edutecnia-mobile-ui",
   "description": "Standard UI patterns para apps moviles de Edutecnia (Ionic Vue + Capacitor). Cubre dark mode, page structure, modales, formularios, componentes y estilos.",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "skills": [
     "skills/shared-components.md"
   ]
