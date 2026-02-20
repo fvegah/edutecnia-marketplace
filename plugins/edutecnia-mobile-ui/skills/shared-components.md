@@ -1,6 +1,6 @@
 ---
 name: mobile-ui-standard
-description: Standard UI patterns for Edutecnia mobile apps (Ionic Vue + Capacitor). Covers dark mode, page structure, modals, forms, components, icons, and styling for parents, teachers, and students apps.
+description: Standard UI patterns for Edutecnia mobile apps (Ionic Vue + Capacitor). Covers design tokens, responsive design, dark mode, page structure, accessibility, modals, forms, components, icons, and styling for parents, teachers, and students apps.
 ---
 
 # Edutecnia UI Mobile Standard (Ionic Vue + Capacitor)
@@ -8,7 +8,7 @@ description: Standard UI patterns for Edutecnia mobile apps (Ionic Vue + Capacit
 > **Alcance:** Solo aplica a proyectos del ecosistema Edutecnia. No usar en otros proyectos.
 
 ## Descripcion
-Estandar de UI para las apps moviles de Edutecnia. Define patrones, componentes y convenciones para construir interfaces consistentes usando Ionic Vue 8 + Vue 3 + Capacitor 7 + Vite. Aplica a: edutecnia-parents-app, edutecnia-teachers-app, y cualquier proyecto Ionic Vue nuevo.
+Estandar de UI para las apps moviles de Edutecnia. Define patrones, componentes y convenciones para construir interfaces consistentes usando Ionic Vue 8 + Vue 3 + Capacitor 7 + Vite. Aplica a: edutecnia-parents-app, edutecnia-teachers-app, edutecnia-students-app, y cualquier proyecto Ionic Vue nuevo.
 
 ## Stack Obligatorio
 - **Framework:** Vue 3.5+ con Composition API (`<script setup>`)
@@ -20,6 +20,47 @@ Estandar de UI para las apps moviles de Edutecnia. Define patrones, componentes 
 - **Messaging:** Firebase 11+
 - **Storage:** @capacitor/preferences
 - **Testing:** Vitest + Cypress
+
+## Design Tokens
+
+Definidos en `src/theme/base.css` dentro de `:root`. Usar SIEMPRE estas variables en lugar de valores hardcodeados:
+
+### Tipografia
+```css
+:root {
+  --edu-font-size-xs: 0.75rem;   /* 12px */
+  --edu-font-size-sm: 0.8125rem; /* 13px */
+  --edu-font-size-base: 0.875rem; /* 14px */
+  --edu-font-size-md: 1rem;       /* 16px */
+  --edu-font-size-lg: 1.125rem;   /* 18px */
+  --edu-font-size-xl: 1.5rem;     /* 24px */
+  --edu-font-size-2xl: 1.75rem;   /* 28px */
+}
+```
+
+### Espaciado
+```css
+:root {
+  --edu-space-xs: 4px;
+  --edu-space-sm: 8px;
+  --edu-space-md: 12px;
+  --edu-space-base: 16px;
+  --edu-space-lg: 24px;
+  --edu-space-xl: 32px;
+  --edu-space-2xl: 48px;
+}
+```
+
+**Uso correcto:**
+```css
+/* SI */
+.page-header { margin-bottom: var(--edu-space-lg); }
+.page-header h1 { font-size: var(--edu-font-size-2xl); }
+
+/* NO */
+.page-header { margin-bottom: 24px; }
+.page-header h1 { font-size: 1.75rem; }
+```
 
 ## Colores Edutecnia
 
@@ -107,12 +148,190 @@ src/
 ├── router/                  # Vue Router con guards
 ├── services/                # API calls (Axios)
 ├── store/                   # Estado (Capacitor Preferences)
-├── theme/                   # CSS: base.css, dark.css, auth/login.css
+├── theme/                   # CSS: base.css (incluye dark mode), auth/login.css
 ├── utils/                   # Helpers (theme.js, etc.)
 ├── views/                   # Paginas principales
 │   └── session/             # Login, Recover, ChangePassword
 ├── main.ts                  # Entry point
 └── App.vue                  # Root <ion-app>
+```
+
+## Responsive Design
+
+### Breakpoints estandar
+```
+480px   → Small phones (iPhone SE): padding reducido
+768px   → Tablet: grids 2 columnas, containers mas angostos
+992px   → Split pane activo (ion-split-pane when="lg")
+1024px  → Desktop: grids 3+ columnas, auto-fit layouts
+```
+
+### Responsive Containers
+
+Toda pagina debe envolver su contenido en un container responsivo. Definidos globalmente en `base.css`:
+
+```css
+.responsive-container {
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.responsive-container--wide {
+    max-width: 1100px;  /* Para paginas con grids (horario, evaluaciones) */
+}
+
+.responsive-container--narrow {
+    max-width: 600px;   /* Para perfil, configuracion */
+}
+```
+
+**Uso en template:**
+```html
+<ion-content :fullscreen="true" class="ion-padding">
+    <div class="responsive-container">
+        <!-- contenido -->
+    </div>
+</ion-content>
+```
+
+### Small phones (480px)
+```css
+@media (max-width: 480px) {
+    .responsive-container { padding-left: 0; padding-right: 0; }
+    ion-content.ion-padding {
+        --padding-start: 12px;
+        --padding-end: 12px;
+    }
+}
+```
+
+### Tablet (768-991px)
+```css
+@media (min-width: 768px) and (max-width: 991px) {
+    .responsive-container { max-width: 720px; }
+}
+```
+
+### Grid responsive en paginas de listas
+```css
+/* 768px: 2 columnas */
+@media (min-width: 768px) {
+    .classmates-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 16px; }
+}
+
+/* 1024px: 3 columnas */
+@media (min-width: 1024px) {
+    .classmates-list { grid-template-columns: repeat(3, 1fr); }
+}
+```
+
+## Estilos Globales Compartidos (DRY)
+
+Estos estilos estan en `base.css` y son globales. **NO duplicarlos en estilos scoped de cada pagina:**
+
+### Page Header
+```css
+.page-header {
+    margin-bottom: var(--edu-space-lg);
+}
+.page-header h1 {
+    margin: 0 0 var(--edu-space-xs) 0;
+    font-size: var(--edu-font-size-2xl);
+    font-weight: 700;
+    line-height: 1.2;
+}
+.page-header p {
+    margin: 0;
+    color: var(--ion-color-medium);
+    line-height: 1.4;
+}
+```
+
+### Section Header
+```css
+.section-header h2 {
+    font-size: var(--edu-font-size-base);
+    font-weight: 600;
+    color: var(--ion-color-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+```
+
+### Empty State
+```css
+.empty-state {
+    text-align: center;
+    padding: var(--edu-space-2xl) var(--edu-space-lg);
+}
+.empty-state .empty-icon {
+    font-size: 64px;
+    color: var(--ion-color-medium);
+    margin-bottom: var(--edu-space-base);
+}
+.empty-state h3 { margin: 0 0 var(--edu-space-sm) 0; }
+.empty-state p { margin: 0; color: var(--ion-color-medium); }
+```
+
+### Loading Container
+```css
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--edu-space-2xl);
+}
+.loading-container p {
+    margin-top: var(--edu-space-base);
+    color: var(--ion-color-medium);
+}
+.loading-container.small { padding: var(--edu-space-lg); }
+```
+
+## Accesibilidad (ARIA)
+
+### Botones de refresh
+Todos los botones de accion en headers deben tener `aria-label`:
+```html
+<ion-button @click="loadData" :disabled="loading" aria-label="Actualizar horario">
+    <ion-icon slot="icon-only" :icon="refreshOutline"></ion-icon>
+</ion-button>
+```
+
+### Menu de navegacion
+```html
+<nav class="menu-nav" aria-label="Navegacion principal">
+    <router-link
+        v-for="item in appPages"
+        :to="item.url"
+        :aria-current="isActive(item.url) ? 'page' : undefined"
+    >
+        <ion-icon :icon="item.iosIcon" aria-hidden="true"></ion-icon>
+        <span>{{ item.title }}</span>
+    </router-link>
+</nav>
+```
+
+**Reglas ARIA:**
+- `aria-label` en botones icon-only (sin texto visible)
+- `aria-current="page"` en el item activo del menu
+- `aria-hidden="true"` en iconos decorativos (que acompanan texto)
+- `aria-label` en secciones interactivas del menu (ej: "Ver mi perfil" en el card de usuario)
+
+### Focus indicators
+```css
+:focus-visible {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 2px;
+}
+ion-button:focus-visible,
+ion-item:focus-visible,
+.menu-item:focus-visible {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 2px;
+}
 ```
 
 ## Dark Mode
@@ -149,7 +368,7 @@ Selectores CSS para dark mode: `body.dark`, `.ios body.dark`, `.md body.dark`.
 ```html
 <!-- src/components/layout/AppLayout.vue -->
 <template>
-  <ion-split-pane content-id="main-content">
+  <ion-split-pane content-id="main-content" when="lg">
     <ion-menu content-id="main-content" type="overlay">
       <app-menu></app-menu>
     </ion-menu>
@@ -163,7 +382,8 @@ Selectores CSS para dark mode: `body.dark`, `.ios body.dark`, `.md body.dark`.
 </template>
 ```
 
-- Split pane con side menu `type="overlay"`
+- Split pane con `when="lg"` (se abre permanentemente a 992px+)
+- Side menu `type="overlay"` para mobile
 - Contenido protegido dentro de `ion-router-outlet`
 
 ## AppTopBar
@@ -181,22 +401,62 @@ Selectores CSS para dark mode: `body.dark`, `.ios body.dark`, `.md body.dark`.
 
 - Header: `translucent`
 - Menu button: `color="primary"` (naranja)
-- Titulo: `"Edutecnia | NombreApp"` (ej: "Edutecnia | Apoderados", "Edutecnia | Docentes")
+- Titulo: `"Edutecnia | NombreApp"` (ej: "Edutecnia | Apoderados", "Edutecnia | Docentes", "Edutecnia | Estudiantes")
 
 ## AppMenu (Side Drawer)
 
-Logo en la parte superior, dos secciones de items (navegacion principal + configuracion).
+Logo en la parte superior, user card con link a perfil, dos secciones de items (navegacion principal + configuracion).
+
+```html
+<div class="app-menu">
+    <!-- Logo -->
+    <div class="menu-header">
+        <EduLogo size="medium" />
+    </div>
+
+    <!-- User Card (link a perfil) -->
+    <router-link to="/app/perfil" class="user-section" aria-label="Ver mi perfil">
+        <div class="user-avatar">
+            <ion-icon :icon="personCircleOutline" aria-hidden="true"></ion-icon>
+        </div>
+        <div class="user-info">
+            <span class="user-name">{{ userData.name }}</span>
+            <span class="user-role">Estudiante</span>
+        </div>
+    </router-link>
+
+    <!-- Nav principal -->
+    <nav class="menu-nav" aria-label="Navegacion principal">
+        <router-link v-for="item in appPages" :key="item.id" :to="item.url"
+            class="menu-item" :class="{ active: isActive(item.url) }"
+            :aria-current="isActive(item.url) ? 'page' : undefined">
+            <ion-icon :icon="item.iosIcon" aria-hidden="true"></ion-icon>
+            <span>{{ item.title }}</span>
+        </router-link>
+    </nav>
+
+    <!-- Footer (configuracion) -->
+    <div class="menu-footer">
+        <router-link v-for="item in otherPages" :key="item.id" :to="item.url" class="menu-item">
+            <ion-icon :icon="item.iosIcon"></ion-icon>
+            <span>{{ item.title }}</span>
+        </router-link>
+    </div>
+</div>
+```
+
+**Importante:** NO duplicar "Mi Perfil" en `otherPages` si el user card ya linkea a perfil.
 
 ```javascript
 const appPages = [
-  { id: 1, title: 'Inicio',         url: '/app/inicio',         iosIcon: homeOutline,         mdIcon: homeSharp },
-  { id: 2, title: 'Agenda',         url: '/app/agenda',         iosIcon: bookOutline,         mdIcon: bookSharp },
-  { id: 3, title: 'Horario',        url: '/app/horario',        iosIcon: calendarOutline,     mdIcon: calendarSharp },
-  { id: 4, title: 'Calificaciones', url: '/app/calificaciones', iosIcon: nutritionOutline,    mdIcon: nutritionSharp },
+  { id: 1, title: 'Inicio',         url: '/app/inicio',         iosIcon: homeOutline },
+  { id: 2, title: 'Agenda',         url: '/app/agenda',         iosIcon: bookOutline },
+  { id: 3, title: 'Horario',        url: '/app/horario',        iosIcon: calendarOutline },
+  { id: 4, title: 'Calificaciones', url: '/app/calificaciones', iosIcon: nutritionOutline },
   // ...
 ];
 const otherPages = [
-  { id: 9, title: 'Configuraciones', url: '/app/configuraciones', iosIcon: settingsOutline, mdIcon: settingsSharp },
+  { id: 9, title: 'Configuraciones', url: '/app/configuraciones', iosIcon: settingsOutline },
 ];
 ```
 
@@ -209,12 +469,10 @@ ion-menu.md ion-item.selected {
 ion-menu.md ion-item.selected ion-icon { color: var(--ion-color-primary); }
 ion-menu.md ion-item ion-icon { color: #616e7e; }
 ion-menu.md ion-item { --padding-start: 10px; --padding-end: 10px; border-radius: 4px; font-size: 14px; }
-ion-menu.md ion-item ion-label { font-weight: 500; }
 
 /* iOS selected state */
 ion-menu.ios ion-item.selected ion-icon { color: var(--ion-color-primary); }
 ion-menu.ios ion-item ion-icon { font-size: 24px; color: #73849a; }
-ion-menu.ios ion-item { --padding-start: 16px; --padding-end: 16px; --min-height: 50px; }
 
 /* Global selected */
 ion-item.selected { --color: var(--ion-color-primary); }
@@ -231,28 +489,48 @@ Todas las paginas protegidas siguen esta estructura exacta:
 ```html
 <template>
   <ion-page>
-    <ion-content :fullscreen="true">
-      <div id="container">
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button color="primary"></ion-menu-button>
+        </ion-buttons>
+        <ion-title>Nombre Pagina</ion-title>
+        <ion-buttons slot="end">
+          <ion-button @click="loadData" :disabled="loading" aria-label="Actualizar nombre">
+            <ion-icon slot="icon-only" :icon="refreshOutline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
 
-        <!-- Pull-to-Refresh (siempre al inicio del container) -->
-        <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)"
-          :pull-factor="0.5" :pull-min="100" :pull-max="200">
-          <ion-refresher-content></ion-refresher-content>
-        </ion-refresher>
+    <ion-content :fullscreen="true" class="ion-padding">
+      <!-- Pull-to-Refresh -->
+      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)"
+        :pull-factor="0.5" :pull-min="100" :pull-max="200">
+        <ion-refresher-content></ion-refresher-content>
+      </ion-refresher>
 
-        <!-- Contenido cuando esta cargado -->
-        <ion-grid v-if="!loading">
-          <ion-row>
-            <select-student @on-select-student="onSelectStudent"></select-student>
-          </ion-row>
-          <!-- ... contenido de la pagina ... -->
-        </ion-grid>
+      <div class="responsive-container">
+        <div class="page-header">
+          <h1>Nombre Pagina</h1>
+          <p>Subtitulo descriptivo</p>
+        </div>
 
-        <!-- Estado de carga -->
-        <ion-grid v-else>
-          <loading-skeleton/>
-        </ion-grid>
+        <!-- Loading -->
+        <loading-skeleton v-if="loading" variant="cards" :count="4"/>
 
+        <!-- Error -->
+        <ion-card v-else-if="error" color="danger">
+          <ion-card-content>
+            <p>{{ error }}</p>
+            <ion-button fill="clear" @click="loadData">Reintentar</ion-button>
+          </ion-card-content>
+        </ion-card>
+
+        <!-- Content -->
+        <div v-else>
+          <!-- contenido de la pagina -->
+        </div>
       </div>
     </ion-content>
   </ion-page>
@@ -260,11 +538,14 @@ Todas las paginas protegidas siguen esta estructura exacta:
 ```
 
 Convenciones:
-- `ion-content :fullscreen="true"` en cada pagina
-- Todo envuelto en `<div id="container">`
+- `ion-content :fullscreen="true"` con `class="ion-padding"`
+- Header con `ion-menu-button` + titulo + boton refresh con `aria-label`
+- Todo envuelto en `<div class="responsive-container">` (o `--wide`/`--narrow`)
 - `ion-refresher` con `slot="fixed"`, `:pull-factor="0.5"`, `:pull-min="100"`, `:pull-max="200"`
-- `v-if="!loading"` / `v-else` con `<loading-skeleton/>` como fallback
-- `<select-student>` como primera fila del grid en todas las paginas con datos
+- `.page-header` con h1 y p (estilos globales, NO duplicar en scoped)
+- `<loading-skeleton>` con variant adecuado como fallback de carga
+- Error card con `color="danger"` y boton de reintentar
+- `v-if="loading"` / `v-else-if="error"` / `v-else` para estados
 
 ## Pull-to-Refresh
 
@@ -279,7 +560,7 @@ Siempre el mismo template:
 Handler:
 ```javascript
 const handleRefresh = (event) => {
-  fetchData().finally(() => {
+  loadData().finally(() => {
     event.target.complete();
   });
 };
@@ -316,11 +597,10 @@ Uso: `<EduLogo size="medium" />` en menu, `<EduLogo size="large" />` en login.
 
 ## Componente: SelectStudent
 
-Selector tipo acordeon que muestra el estudiante activo y permite cambiar entre hijos.
+Selector tipo acordeon que muestra el estudiante activo y permite cambiar entre hijos. Solo aplica a parents-app.
 
 ```html
 <div class="student-selector">
-  <!-- Barra del estudiante seleccionado (siempre visible) -->
   <ion-item class="selected-student-bar" button @click="isAccordionOpen = !isAccordionOpen">
     <ion-avatar slot="start">...</ion-avatar>
     <ion-label>
@@ -328,14 +608,10 @@ Selector tipo acordeon que muestra el estudiante activo y permite cambiar entre 
       <p>{{ course_name }}</p>
       <p class="establishment-info">{{ establishment.name }}</p>
     </ion-label>
-    <ion-avatar slot="end" class="establishment-logo">...</ion-avatar>
   </ion-item>
-
-  <!-- Lista acordeon -->
   <div class="students-accordion" :class="{ 'open': isAccordionOpen }">
     <ion-list>
-      <ion-item v-for="student in otherStudents" ...>
-      </ion-item>
+      <ion-item v-for="student in otherStudents" ...></ion-item>
     </ion-list>
   </div>
 </div>
@@ -343,71 +619,103 @@ Selector tipo acordeon que muestra el estudiante activo y permite cambiar entre 
 
 Emite: `@on-select-student`
 
-**CSS clave:**
 ```css
-.selected-student-bar {
-  --background: var(--ion-color-light);
-  border-radius: 8px; margin: 0.5rem;
-}
-.selected-student-bar ion-avatar { width: 40px; height: 40px; }
-.selected-student-bar h2 { font-size: 1rem; font-weight: 600; }
-.selected-student-bar p { font-size: 0.85rem; color: var(--ion-color-medium); }
-
-.students-accordion {
-  max-height: 0; overflow: hidden;
-  transition: max-height 0.3s ease-out;
-}
-.students-accordion.open {
-  max-height: 300px; overflow-y: auto;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-.students-accordion ion-item.selected {
-  --background: rgba(var(--ion-color-primary-rgb), 0.1);
-}
+.selected-student-bar { --background: var(--ion-color-light); border-radius: 8px; margin: 0.5rem; }
+.students-accordion { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+.students-accordion.open { max-height: 300px; overflow-y: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 ```
 
 ## Componente: LoadingSkeleton
 
+Componente adaptable con 3 variantes y cantidad configurable. Usar la variante que mejor represente el contenido que se esta cargando.
+
 ```html
 <!-- src/components/common/loadingSkeleton.vue -->
-<ion-row style="margin-top: 100px;">
-  <ion-col>
-    <ion-list>
-      <ion-list-header>
-        <ion-skeleton-text :animated="true" style="width: 80px"></ion-skeleton-text>
-      </ion-list-header>
-      <!-- 3 filas identicas con thumbnail + 3 lineas de texto -->
-      <ion-item>
-        <ion-thumbnail slot="start">
-          <ion-skeleton-text :animated="true"></ion-skeleton-text>
-        </ion-thumbnail>
-        <ion-label>
-          <h3><ion-skeleton-text :animated="true" style="width: 80%;"></ion-skeleton-text></h3>
-          <p><ion-skeleton-text :animated="true" style="width: 60%;"></ion-skeleton-text></p>
-          <p><ion-skeleton-text :animated="true" style="width: 30%;"></ion-skeleton-text></p>
-        </ion-label>
-      </ion-item>
-      <!-- repetir 2 veces mas -->
-    </ion-list>
-  </ion-col>
-</ion-row>
+<script setup>
+defineProps({
+    variant: {
+        type: String,
+        default: 'list',
+        validator: (v) => ['list', 'grid', 'cards'].includes(v)
+    },
+    count: {
+        type: Number,
+        default: 3
+    }
+});
+</script>
 ```
 
-- `margin-top: 100px` para separar del header
-- 3 filas con thumbnail + 3 lineas (80%, 60%, 30%)
-- Siempre `:animated="true"`
+### Variantes
 
-### Spinner inline (para cargas secundarias)
+| Variante | Uso | Grid responsive |
+|----------|-----|-----------------|
+| `list` (default) | Listas con thumbnail (companeros, items) | No |
+| `grid` | Dashboard quick-access grid | 2→3→4 cols (480→768→1024px) |
+| `cards` | Paginas con tarjetas (agenda, notas, horario) | 1→2 cols (768px+) |
+
+### Uso por pagina
 ```html
-<ion-row class="ion-justify-content-center ion-align-items-center" style="height: 60vh;">
-  <ion-col class="ion-text-center">
-    <ion-spinner name="crescent" />
-    <div>Cargando...</div>
-  </ion-col>
-</ion-row>
+<!-- Companeros (lista) -->
+<loading-skeleton v-if="loading" :count="6"/>
+
+<!-- Dashboard (grid de accesos rapidos) -->
+<loading-skeleton v-if="loading" variant="grid" :count="6"/>
+
+<!-- Agenda, Notas, Asistencia (cards) -->
+<loading-skeleton v-if="loading" variant="cards" :count="4"/>
+
+<!-- Horario (cards con mas items) -->
+<loading-skeleton v-if="loading" variant="cards" :count="5"/>
+```
+
+### Estructura interna de cada variante
+
+**list:** `ion-list` con header + N items con thumbnail + 3 lineas (80%, 60%, 30%)
+
+**grid:** CSS grid (2 cols default) con cards centrados (icono 48px + 2 lineas texto)
+
+**cards:** Flex vertical (grid 2 cols en 768px+) con cards que tienen icono 50px + 3 lineas de contenido
+
+### Spinner inline (para cargas secundarias dentro de pagina)
+```html
+<div class="loading-container small">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+</div>
 ```
 
 Spinner variant: siempre `name="crescent"`.
+
+## Patron: Visibilidad condicional sin !important
+
+**NUNCA usar `display: block !important`** para sobreescribir `v-show` en grids responsivos. En su lugar, usar clases CSS:
+
+```html
+<!-- INCORRECTO (anti-pattern) -->
+<div v-show="selectedDay === day.day" class="day-content">...</div>
+<!-- Requiere !important para sobreescribir v-show en desktop -->
+
+<!-- CORRECTO -->
+<div :class="['day-content', { 'day-content--active': selectedDay === day.day }]">...</div>
+```
+
+```css
+/* Mobile: solo mostrar el dia activo */
+.day-content { display: none; }
+.day-content--active { display: block; }
+
+/* Tablet: 2 columnas, todos visibles */
+@media (min-width: 768px) {
+    .day-schedule { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .day-content { display: block; }
+    .day-tabs { display: none; } /* Ocultar selector de tabs */
+}
+
+/* Desktop: auto-fit */
+@media (min-width: 1024px) {
+    .day-schedule { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+}
+```
 
 ## Modales / Sheets
 
@@ -450,18 +758,13 @@ const cancel = () => modalController.dismiss(null, 'cancel');
 
 ### Modal con `<ion-modal>` inline (alternativa)
 ```html
-<ion-modal :is-open="true" @didDismiss="$emit('close')" :can-dismiss="true">
+<ion-modal :is-open="showModal" @did-dismiss="closeModal">
   <ion-header>
     <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-button @click="$emit('close')">
-          <ion-icon name="arrow-back"></ion-icon>Volver
-        </ion-button>
-      </ion-buttons>
       <ion-title>Detalle</ion-title>
       <ion-buttons slot="end">
-        <ion-button @click="$emit('close')">
-          <ion-icon name="close"></ion-icon>
+        <ion-button @click="closeModal">
+          <ion-icon :icon="closeOutline"></ion-icon>
         </ion-button>
       </ion-buttons>
     </ion-toolbar>
@@ -535,6 +838,11 @@ await toast.present();
   box-shadow: 4px 4px 0 2px #112327; border-radius: 8px; }
 .ios body.dark .login-card,
 .md body.dark .login-card { box-shadow: 4px 4px 0 2px var(--ion-color-primary); }
+
+/* Small phones */
+@media (max-width: 480px) {
+    .login-card { margin: 8px; max-width: none; width: calc(100% - 16px); }
+}
 ```
 
 ## Listas e Items
@@ -594,7 +902,7 @@ import {
   settingsOutline, settingsSharp,
   mailOutline, mailSharp,
   eyeOutline, eyeOffOutline,
-  sunny, moon,
+  sunny, moon, refreshOutline,
 } from 'ionicons/icons';
 ```
 
@@ -603,22 +911,30 @@ Renderizar con variantes de plataforma:
 <ion-icon :ios="homeOutline" :md="homeSharp"></ion-icon>
 ```
 
+Para iconos decorativos (acompanan texto), agregar `aria-hidden="true"`:
+```html
+<ion-icon :icon="item.iosIcon" aria-hidden="true"></ion-icon>
+```
+
 ## Tipografia y Espaciado
 
-### Jerarquia de tamanos
+### Jerarquia de tamanos (usar design tokens)
 ```
-1.5rem  → Encabezado de perfil (h2)
-1rem    → Titulo item, contenido principal
-0.9rem  → Texto secundario, error messages
-0.85rem → Label-title, subtitulo
-0.75rem → Establishment info (italic)
+var(--edu-font-size-2xl)  → Titulo de pagina (h1)
+var(--edu-font-size-xl)   → Titulo de seccion principal
+var(--edu-font-size-lg)   → Titulo de card, subtitulos
+var(--edu-font-size-md)   → Texto principal, contenido
+var(--edu-font-size-base) → Texto secundario, labels
+var(--edu-font-size-sm)   → Texto small, descriptions
+var(--edu-font-size-xs)   → Establishment info, meta texto
 ```
 
 ### Border radius
 ```
 4px  → Menu items (MD), badge de entorno
 8px  → Cards, listas, student bar, botones, login card
-50%  → Avatares
+12px → Skeleton cards, subject badges, search bars
+50%  → Avatares, percentage circles
 ```
 
 ## Avatar Sizes
@@ -626,6 +942,8 @@ Renderizar con variantes de plataforma:
 ```
 100px × 100px  → Perfil
 80px × 80px    → Detalle de companero
+48px × 48px    → Subject badges en evaluaciones
+44px × 44px    → Lista de companeros
 40px × 40px    → Student selector bar, lista
 36px × 36px    → Student selector accordion, responsive
 32px × 32px    → Logo de establecimiento
@@ -645,9 +963,12 @@ Default avatar: `@/assets/avatar.svg`
   /app/agenda                   → AgendaPage
   /app/horario                  → SchedulePage
   /app/calificaciones           → GradesPage
+  /app/evaluaciones             → EvaluationsPage
+  /app/evaluaciones/realizar/:id → TakeEvaluationPage
   /app/observaciones            → NotesPage
   /app/asistencia               → AttendancePage
   /app/companeros               → ClassmatesPage
+  /app/perfil                   → ProfilePage
   /app/configuraciones          → ConfigurationPage
 /:pathMatch(.*)*                → NotFoundPage
 ```
@@ -662,26 +983,38 @@ Auth guard: verifica `getIsAuthenticated()` de Capacitor Preferences. Si autenti
 | `#e06a13` | Primary shade |
 | `#ff862d` | Primary tint |
 | `0.85` | initialBreakpoint de modales |
-| `576px` | Unico breakpoint responsive |
+| `480px` | Breakpoint small phones |
+| `768px` | Breakpoint tablet (grid 2 cols) |
+| `992px` | Breakpoint split-pane (`when="lg"`) |
+| `1024px` | Breakpoint desktop (grid 3+ cols) |
 | `8px` | Border-radius estandar |
+| `12px` | Border-radius cards/search |
 | `crescent` | Variante de spinner |
 | `0.3s ease-out` | Animacion del acordeon |
 | `300px` | Max-height del acordeon abierto |
+| `900px` | Max-width responsive-container |
+| `1100px` | Max-width responsive-container--wide |
+| `600px` | Max-width responsive-container--narrow |
 | `pull-factor 0.5, min 100, max 200` | Refresher config |
 | `2000-3000ms` | Duracion de toasts |
 
 ## Reglas Estrictas
 
 1. **NO usar Vuetify** — Solo componentes Ionic
-2. **NO usar SCSS en archivos nuevos** — Solo CSS plano con variables Ionic
+2. **NO usar SCSS en archivos nuevos** — Solo CSS plano con variables Ionic + design tokens
 3. **NO usar Tailwind** — Solo utilidades CSS de Ionic y CSS custom
 4. **NO usar Options API** — Solo Composition API con `<script setup>`
 5. **NO usar Pinia/Vuex** — Usar `ref()` + Capacitor Preferences
 6. **NO usar Lucide** — Solo ionicons (variantes ios/md)
-7. **SIEMPRE** usar componentes Ionic (ion-button, ion-input, ion-list, etc.)
-8. **SIEMPRE** `label-placement="stacked"` en inputs
-9. **SIEMPRE** `initialBreakpoint: 0.85` en modales con modalController
-10. **SIEMPRE** pull-to-refresh en paginas con datos (pull-factor 0.5)
-11. **SIEMPRE** `<select-student>` como primera fila en paginas de datos
-12. **SIEMPRE** `<loading-skeleton>` como fallback de carga
-13. **Textos en espanol** — Labels, placeholders, mensajes, todo en espanol
+7. **NO duplicar estilos globales** — `.page-header`, `.empty-state`, `.loading-container`, `.section-header` estan en `base.css`
+8. **NO usar `display: block !important`** — Usar clases CSS para visibilidad condicional
+9. **NO hardcodear tamaños/espacios** — Usar design tokens (`--edu-font-size-*`, `--edu-space-*`)
+10. **SIEMPRE** usar componentes Ionic (ion-button, ion-input, ion-list, etc.)
+11. **SIEMPRE** `label-placement="stacked"` en inputs
+12. **SIEMPRE** `initialBreakpoint: 0.85` en modales con modalController
+13. **SIEMPRE** pull-to-refresh en paginas con datos (pull-factor 0.5)
+14. **SIEMPRE** envolver contenido en `<div class="responsive-container">`
+15. **SIEMPRE** `<loading-skeleton>` con variant adecuado como fallback de carga
+16. **SIEMPRE** `aria-label` en botones icon-only
+17. **SIEMPRE** `aria-hidden="true"` en iconos decorativos
+18. **Textos en espanol** — Labels, placeholders, mensajes, todo en espanol
